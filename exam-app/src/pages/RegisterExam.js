@@ -1,4 +1,4 @@
-// src/pages/RegisterExam.js - UPDATED WITH FACULTY-BASED COURSE FILTERING
+// src/pages/RegisterExam.js - UPDATED WITH BLOCKCHAIN INTEGRATION
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import '../styles/RegisterExam.css';
@@ -26,6 +26,11 @@ function RegisterExam() {
   const [registrationComplete, setRegistrationComplete] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [verification, setVerification] = useState(null);
+  
+  // Blockchain state
+  const [blockchainStatus, setBlockchainStatus] = useState(null);
+  const [blockchainTx, setBlockchainTx] = useState(null);
+  const [blockchainLoading, setBlockchainLoading] = useState(false);
 
   // Filter courses based on selected faculty
   const filteredCourses = formData.faculty_id 
@@ -37,6 +42,7 @@ function RegisterExam() {
     fetchCourses();
     fetchFaculties();
     generateVerificationCode();
+    checkBlockchainStatus();
     
     // Pre-fill user data if available
     if (user) {
@@ -48,6 +54,55 @@ function RegisterExam() {
       }));
     }
   }, [user]);
+
+  // Check blockchain status
+  const checkBlockchainStatus = async () => {
+    try {
+      const headers = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const res = await fetch('http://localhost:5000/api/blockchain/status', {
+        headers
+      });
+      
+      if (res.ok) {
+        const response = await res.json();
+        if (response.success) {
+          setBlockchainStatus(response.data);
+        }
+      }
+    } catch (err) {
+      console.log('Blockchain status check failed:', err.message);
+    }
+  };
+
+  // Verify blockchain record
+  const verifyBlockchainRecord = async (studentId) => {
+    try {
+      setBlockchainLoading(true);
+      const headers = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const res = await fetch(`http://localhost:5000/api/blockchain/student/${studentId}`, {
+        headers
+      });
+      
+      if (res.ok) {
+        const response = await res.json();
+        return response.data || [];
+      }
+      return [];
+    } catch (err) {
+      console.error('Blockchain verification failed:', err);
+      return [];
+    } finally {
+      setBlockchainLoading(false);
+    }
+  };
 
   const fetchCourses = async () => {
     try {
@@ -64,7 +119,6 @@ function RegisterExam() {
         const response = await res.json();
         console.log('Courses API response:', response);
         
-        // Handle both response structures
         if (response.success && Array.isArray(response.data)) {
           setCourses(response.data);
         } else if (Array.isArray(response)) {
@@ -101,7 +155,6 @@ function RegisterExam() {
         const response = await res.json();
         console.log('Faculties API response:', response);
         
-        // Handle both response structures
         if (response.success && Array.isArray(response.data)) {
           setFaculties(response.data);
         } else if (Array.isArray(response)) {
@@ -199,54 +252,6 @@ function RegisterExam() {
     return true;
   };
 
-  const handleSlipVerification = async () => {
-    if (!slip || selectedCourses.length === 0) {
-      setMessage('Please select courses and upload payment slip first');
-      return;
-    }
-
-    setLoading(true);
-    setMessage('');
-    
-    try {
-      const formData = new FormData();
-      formData.append('slip', slip);
-      formData.append('courseIds', selectedCourses.join(','));
-      formData.append('totalRequired', total);
-
-      console.log('Verifying slip...');
-
-      const headers = {};
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const res = await fetch('http://localhost:5000/api/admin/verify-slip', {
-        method: 'POST',
-        body: formData,
-        headers
-      });
-
-      if (!res.ok) {
-        throw new Error('Verification failed');
-      }
-
-      const data = await res.json();
-      setVerification(data);
-      
-      if (data.verified) {
-        setMessage(`✅ ${data.message}`);
-      } else {
-        setMessage(`❌ ${data.message}`);
-      }
-    } catch (err) {
-      console.error('Error verifying slip:', err);
-      setMessage('Failed to verify payment slip. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -262,6 +267,7 @@ function RegisterExam() {
 
     setLoading(true);
     setMessage('');
+    setBlockchainTx(null);
     
     try {
       // Prepare submission data
@@ -309,13 +315,26 @@ function RegisterExam() {
       const result = await res.json();
       console.log('Registration success:', result);
       
-      setMessage(`🎉 ${result.message}`);
+      // Handle blockchain response
+      if (result.blockchain) {
+        setBlockchainTx(result.blockchain);
+        setMessage(`🎉 ${result.message} - Blockchain record created!`);
+        
+        // Verify blockchain record after a short delay
+        setTimeout(async () => {
+          const records = await verifyBlockchainRecord(formData.studentId);
+          console.log('Blockchain records:', records);
+        }, 3000);
+      } else {
+        setMessage(`🎉 ${result.message}`);
+      }
+      
       setRegistrationComplete(true);
       
       // Reset form after successful registration
       setTimeout(() => {
         resetForm();
-      }, 5000);
+      }, 10000);
       
     } catch (err) {
       console.error('Error submitting registration:', err);
@@ -329,6 +348,7 @@ function RegisterExam() {
     setSelectedCourses([]);
     setSlip(null);
     setVerification(null);
+    setBlockchainTx(null);
     setFormData({
       studentName: user?.name || '',
       studentId: user?.studentId || user?.student_id || '',
@@ -394,6 +414,26 @@ function RegisterExam() {
   return (
     <div className="main-area">
       <div className="page-title">Exam Registration</div>
+      
+      {/* Blockchain Status Banner */}
+      {blockchainStatus && (
+        <div className={`blockchain-banner ${blockchainStatus.enabled ? 'enabled' : 'disabled'}`}>
+          <div className="blockchain-status">
+            <span className="status-icon">
+              {blockchainStatus.enabled ? '🔗' : '⚠️'}
+            </span>
+            <span className="status-text">
+              Blockchain: {blockchainStatus.enabled ? 'Connected' : 'Not Available'}
+            </span>
+            {blockchainStatus.network && (
+              <span className="network-badge">{blockchainStatus.network}</span>
+            )}
+          </div>
+          {blockchainStatus.message && (
+            <div className="blockchain-message">{blockchainStatus.message}</div>
+          )}
+        </div>
+      )}
       
       {!user && (
         <div className="auth-warning">
@@ -523,7 +563,6 @@ function RegisterExam() {
               (Total: M{total.toFixed(2)}) *
             </label>
             
-            {/* Faculty Selection Reminder */}
             {!formData.faculty_id && (
               <div className="faculty-reminder">
                 <i className="fas fa-info-circle"></i>
@@ -531,7 +570,6 @@ function RegisterExam() {
               </div>
             )}
 
-            {/* Courses Display */}
             <div className="multi-select">
               {!formData.faculty_id ? (
                 <div className="no-faculty-selected">
@@ -737,55 +775,7 @@ function RegisterExam() {
                 </div>
               )}
             </div>
-            
-            {/* Slip Verification Button */}
-            {slip && selectedCourses.length > 0 && (
-              <button 
-                type="button" 
-                onClick={handleSlipVerification}
-                disabled={loading || registrationComplete}
-                className="verify-slip-btn"
-              >
-                {loading ? 'Verifying...' : 'Verify Payment Slip'}
-              </button>
-            )}
           </div>
-
-          {/* Verification Result */}
-          {verification && (
-            <div className={`verification-result ${verification.verified ? 'verified' : 'not-verified'}`}>
-              <div className="verification-icon">
-                {verification.verified ? '✅' : '❌'}
-              </div>
-              <div className="verification-details">
-                <h4>Payment Verification Result</h4>
-                <div className="verification-info">
-                  <div className="amount-row">
-                    <span>Extracted Amount:</span>
-                    <strong>M{verification.extractedAmount}</strong>
-                  </div>
-                  <div className="amount-row">
-                    <span>Required Amount:</span>
-                    <strong>M{verification.requiredAmount}</strong>
-                  </div>
-                  <div className="amount-row">
-                    <span>Difference:</span>
-                    <strong className={verification.verified ? 'positive' : 'negative'}>
-                      M{verification.amountDifference}
-                    </strong>
-                  </div>
-                </div>
-                {verification.verified && verification.verificationCode && (
-                  <div className="verification-code-section">
-                    <div className="verification-code">
-                      Verification Code: <strong>{verification.verificationCode}</strong>
-                    </div>
-                    <small>Keep this code for your records</small>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Registration Verification Code */}
@@ -817,6 +807,49 @@ function RegisterExam() {
                 </span>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Blockchain Transaction Details */}
+        {blockchainTx && (
+          <div className="blockchain-transaction">
+            <h4>🔗 Blockchain Transaction</h4>
+            <div className="blockchain-details">
+              <div className="blockchain-item">
+                <span>Record ID:</span>
+                <span className="blockchain-value">{blockchainTx.recordId}</span>
+              </div>
+              {blockchainTx.transactionHash && (
+                <div className="blockchain-item">
+                  <span>Transaction Hash:</span>
+                  <span className="blockchain-value">{blockchainTx.transactionHash}</span>
+                </div>
+              )}
+              {blockchainTx.blockNumber && (
+                <div className="blockchain-item">
+                  <span>Block Number:</span>
+                  <span className="blockchain-value">{blockchainTx.blockNumber}</span>
+                </div>
+              )}
+              <div className="blockchain-item">
+                <span>Status:</span>
+                <span className={`blockchain-status ${blockchainTx.verified ? 'verified' : 'pending'}`}>
+                  {blockchainTx.verified ? '✅ Verified on Blockchain' : '⏳ Pending Verification'}
+                </span>
+              </div>
+            </div>
+            {blockchainTx.transactionHash && (
+              <div className="blockchain-actions">
+                <a 
+                  href={`https://sepolia.etherscan.io/tx/${blockchainTx.transactionHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="view-on-blockchain-btn"
+                >
+                  View on Etherscan
+                </a>
+              </div>
+            )}
           </div>
         )}
 
@@ -882,11 +915,11 @@ function RegisterExam() {
             </div>
             <div className="requirement-item">
               <span className="step-number">5</span>
-              <span>Verify payment slip (optional but recommended)</span>
+              <span>Submit your registration (automatically stored on blockchain)</span>
             </div>
             <div className="requirement-item">
               <span className="step-number">6</span>
-              <span>Submit your registration</span>
+              <span>Receive blockchain verification</span>
             </div>
           </div>
           
@@ -896,9 +929,9 @@ function RegisterExam() {
               <li>Ensure all information is accurate before submission</li>
               <li>Courses are filtered by the faculty you select</li>
               <li>Payment amount must meet or exceed the course total</li>
-              <li>Keep your registration code for future reference</li>
+              <li>Your registration will be permanently stored on the blockchain</li>
+              <li>Keep your registration code and blockchain transaction details</li>
               <li>Contact administration if you encounter any issues</li>
-              {!user && <li>⚠️ You are not logged in. Registration will work but won't be linked to your account.</li>}
             </ul>
           </div>
         </div>
