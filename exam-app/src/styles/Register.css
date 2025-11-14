@@ -1,0 +1,128 @@
+/* src/styles/Register.css — 100% MATCH TO YOUR REGISTER SCREEN */
+.register-page {
+  min-height: 100vh;
+  background: #fff;
+  padding: 40px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.register-page h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 32px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.register-form {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.register-form input {
+  width: 100%;
+  padding: 16px;
+  font-size: 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  background: #f8f9fa;
+  color: #333;
+  outline: none;
+}
+
+.register-form input:focus {
+  border-color: #00bcd4;
+  background: #fff;
+}
+
+.register-form input::placeholder {
+  color: #aaa;
+}
+
+.password-input {
+  position: relative;
+}
+
+.password-input input {
+  padding-right: 44px;
+}
+
+.password-eye {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+}
+
+.submit-btn {
+  margin-top: 24px;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+  background: #00bcd4;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.submit-btn:hover {
+  background: #0097a7;
+}
+
+.link {
+  margin-top: 16px;
+  font-size: 14px;
+  color: #666;
+  text-align: center;
+}
+
+.link a {
+  color: #00bcd4;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.divider {
+  margin: 24px 0;
+  font-size: 14px;
+  color: #aaa;
+  text-align: center;
+  position: relative;
+}
+
+.divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #e0e0e0;
+}
+
+.divider span {
+  background: #fff;
+  padding: 0 16px;
+}
+
+.social-login {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-top: 20px;
+}
+
+.social-login img {
+  width: 40px;
+  height: 40px;
+}

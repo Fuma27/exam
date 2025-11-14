@@ -1,0 +1,245 @@
+/* src/index.css — FINAL FOR ALL 5 SCREENSHOTS */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: #f8f9fa;
+  color: #333;
+}
+
+/* ====================== HEADER ====================== */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 76px;
+  background: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  z-index: 1000;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.messages-btn {
+  background: #e0f7fa;
+  color: #00bcd4;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.badge {
+  background: #ff9800;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ====================== MAIN CONTENT ====================== */
+.main-content {
+  margin-top: 76px;
+  padding: 20px 16px;
+  min-height: calc(100vh - 76px);
+  background: #f8f9fa;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+  }
+}
+
+@media (min-width: 769px) {
+  .main-content {
+    margin-left: 280px;
+    padding: 24px;
+  }
+}
+
+/* ====================== AUTH PAGES ====================== */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px 20px;
+  background: #fff;
+}
+
+.auth-page h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.auth-form {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auth-form input,
+.auth-form select {
+  width: 100%;
+  padding: 16px;
+  font-size: 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  background: #f8f9fa;
+  color: #333;
+  outline: none;
+}
+
+.auth-form input:focus,
+.auth-form select:focus {
+  border-color: #00bcd4;
+  background: #fff;
+}
+
+.submit-btn {
+  margin-top: 24px;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+  background: #00bcd4;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.link {
+  margin-top: 16px;
+  font-size: 14px;
+  color: #666;
+  text-align: center;
+}
+
+.link a {
+  color: #00bcd4;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.divider {
+  margin: 24px 0;
+  font-size: 14px;
+  color: #aaa;
+  text-align: center;
+  position: relative;
+}
+
+.divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #e0e0e0;
+}
+
+.divider span {
+  background: #fff;
+  padding: 0 16px;
+}
+
+.social-login {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-top: 20px;
+}
+
+.social-login img {
+  width: 40px;
+  height: 40px;
+}
+
+/* ====================== REGISTER EXAM & CONFIRM ====================== */
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+  background: #00bcd4;
+  padding: 16px;
+  border-radius: 12px 12px 0 0;
+  text-align: center;
+  margin: 0 -16px 20px;
+}
+
+.register-form,
+.confirm-form {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+
+.course-item {
+  background: #e3f2fd;
+  padding: 16px;
+  margin: 12px 0;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+}
+
+.code-input {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 30px 0;
+}
+
+.code-input input {
+  width: 60px;
+  height: 60px;
+  font-size: 32px;
+  text-align: center;
+  border-radius: 12px;
+  border: 2px solid #00bcd4;
+  background: #001f3f;
+  color: white;
+  font-weight: 600;
+}
